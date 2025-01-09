@@ -1,0 +1,27 @@
+{
+  "reward_groups": {
+    "Trainer": {
+      "icon": "cobblemon:poke_ball",
+      "required_caught_percent": 10.0,
+      "rewards": {
+        "example_command": {
+          "type": "command",
+          "commands": [
+            "lp user %player% parent settrack pokedexranks trainer",
+            "say This is a test command!"
+          ]
+        },
+        "example_item": {
+          "type": "item",
+          "item": "minecraft:diamond",
+          "count": 10
+        },
+        "example_other_item": {
+          "type": "item",
+          "item": "cobblemon:poke_ball",
+          "count": 16
+        }
+      }
+    }
+  }
+}
