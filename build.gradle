@@ -53,9 +53,9 @@ dependencies {
 
     include(modImplementation('me.lucko:fabric-permissions-api:0.3.1'))
 
-    modImplementation include("eu.pb4:sgui:1.6.1+1.21.1")
     modImplementation("ca.landonjw.gooeylibs:api:3.1.0-1.21.1-SNAPSHOT")
     modImplementation("ca.landonjw.gooeylibs:fabric:3.1.0-1.21.1-SNAPSHOT")
+    modImplementation include("eu.pb4:placeholder-api:2.4.1+1.21")
 }
 
 processResources {

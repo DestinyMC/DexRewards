@@ -8,9 +8,17 @@ import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.api.Priority;
 import com.cobblemon.mod.common.api.events.CobblemonEvents;
 import com.cobblemon.mod.common.api.pokedex.PokedexEntryProgress;
+import com.cobblemon.mod.common.api.pokedex.PokedexManager;
+import com.cobblemon.mod.common.api.pokedex.SpeciesDexRecord;
 import com.cobblemon.mod.common.api.pokedex.entry.DexEntries;
+import com.cobblemon.mod.common.api.storage.party.PlayerPartyStore;
+import com.cobblemon.mod.common.api.storage.pc.PCBox;
+import com.cobblemon.mod.common.api.storage.pc.PCStore;
+import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.CommandNode;
+import eu.pb4.placeholders.api.PlaceholderResult;
+import eu.pb4.placeholders.api.Placeholders;
 import kotlin.Unit;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.api.ModInitializer;
@@ -36,9 +44,11 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DexRewards implements ModInitializer {
     private static final String MOD_ID = "dexrewards";
@@ -83,15 +93,89 @@ public class DexRewards implements ModInitializer {
             this.server = server;
             this.config = new Config();
 
+            Placeholders.register(ResourceLocation.tryBuild("pokedex", "total_implemented"), (ctx, arg) -> PlaceholderResult.value(String.valueOf(DexEntries.INSTANCE.getEntries().size())));
+
+            Placeholders.register(ResourceLocation.tryBuild("pokedex", "total_caught"), (ctx, arg) -> {
+                if (!ctx.hasPlayer()) {
+                    return PlaceholderResult.invalid("No Player!");
+                }
+
+                ServerPlayer player = ctx.player();
+                assert player != null;
+                return PlaceholderResult.value(String.valueOf(getCaught(player)));
+            });
+
+            Placeholders.register(ResourceLocation.tryBuild("pokedex", "total_seen"), (ctx, arg) -> {
+                if (!ctx.hasPlayer()) {
+                    return PlaceholderResult.invalid("No Player!");
+                }
+
+                ServerPlayer player = ctx.player();
+                assert player != null;
+                return PlaceholderResult.value(String.valueOf(getEncountered(player) + getCaught(player)));
+            });
+
+            Placeholders.register(ResourceLocation.tryBuild("pokedex", "last_claimed_reward"), (ctx, arg) -> {
+                if (!ctx.hasPlayer()) {
+                    return PlaceholderResult.invalid("No Player!");
+                }
+
+                ServerPlayer player = ctx.player();
+
+                String currentRank = "None";
+                assert player != null;
+                for (RewardGroup group : config.getRewards()) {
+                    if (config.getPlayerData().get(player.getStringUUID()).claimedRewards().contains(group.group_name())) {
+                        currentRank = group.group_name();
+                    }
+                }
+
+                return PlaceholderResult.value(currentRank);
+            });
+
+            Placeholders.register(ResourceLocation.tryBuild("pokedex", "total_reward_groups"), (ctx, arg) -> PlaceholderResult.value(String.valueOf(config.getRewards().size())));
+
+            Placeholders.register(ResourceLocation.tryBuild("pokedex", "percent_completed"), (ctx, arg) -> {
+                if (!ctx.hasPlayer()) {
+                    return PlaceholderResult.invalid("No Player!");
+                }
+
+                ServerPlayer player = ctx.player();
+
+                assert player != null;
+                int dex_total = DexEntries.INSTANCE.getEntries().size();
+                int caught_total = getCaught(player);
+                double percent_completed = (double) caught_total / dex_total;
+                return PlaceholderResult.value(String.valueOf(new DecimalFormat("#.##").format(percent_completed)));
+            });
+
             ServerPlayConnectionEvents.JOIN.register((serverPlayNetworkHandler, packetSender, minecraftServer) -> {
                 ServerPlayer player = serverPlayNetworkHandler.getPlayer();
-                if (!config.getPlayerData().containsKey(player.getStringUUID())) {
-                    int caughtCount = 0;
-                    for (ResourceLocation record : Cobblemon.playerDataManager.getPokedexData(player).getSpeciesRecords().keySet()) {
-                        if (Cobblemon.playerDataManager.getPokedexData(player).getSpeciesRecords().get(record).getKnowledge().equals(PokedexEntryProgress.CAUGHT)) {
-                            caughtCount++;
+                PCStore pc = Cobblemon.INSTANCE.getStorage().getPC(player);
+                for (PCBox box : pc.getBoxes()) {
+                    for (Pokemon pokemon : box.getNonEmptySlots().values()) {
+                        // Doing cursed shit because of poor method naming on Cobblemon's behalf
+                        try {
+                            PokedexManager manager = Cobblemon.playerDataManager.getPokedexData(player);
+                            manager.getClass().getDeclaredMethod("catch", Pokemon.class).invoke(manager, pokemon);
+                        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                            throw new RuntimeException(e);
                         }
                     }
+                }
+                PlayerPartyStore party = Cobblemon.INSTANCE.getStorage().getParty(player);
+                for (Pokemon pokemon : party) {
+                    // Doing cursed shit because of poor method naming on Cobblemon's behalf
+                    try {
+                        PokedexManager manager = Cobblemon.playerDataManager.getPokedexData(player);
+                        manager.getClass().getDeclaredMethod("catch", Pokemon.class).invoke(manager, pokemon);
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                if (!config.getPlayerData().containsKey(player.getStringUUID())) {
+                    int caughtCount = getCaught(player);
 
                     ArrayList<String> claimableRewards = new ArrayList<>();
 
@@ -107,6 +191,25 @@ public class DexRewards implements ModInitializer {
 
                     config.updatePlayerData(new PlayerData(player.getStringUUID(), player.getName().getString(), caughtCount, new ArrayList<>(), claimableRewards));
                 } else {
+                    int caughtCount = getCaught(player);
+
+                    for (RewardGroup group : config.getRewards()) {
+                        double required_percent = group.required_caught_percent();
+                        int totalDex = DexEntries.INSTANCE.getEntries().size();
+                        double percent_caught = (double) caughtCount / totalDex;
+                        if (percent_caught * 100 > required_percent) {
+                            if (!config.getPlayerData().get(player.getStringUUID()).claimableRewards().contains(group.group_name())) {
+                                if (!config.getPlayerData().get(player.getStringUUID()).claimedRewards().contains(group.group_name())) {
+                                    config.getPlayerData().get(player.getStringUUID()).claimableRewards().add(group.group_name());
+                                    player.sendMessage(MiniMessage.miniMessage().deserialize("<dark_gray>[<blue>DexRewards<dark_gray>] <gray>You can claim the " + group.group_name() + " rewards!"));
+                                }
+                            }
+                        }
+                    }
+
+                    config.getPlayerData().get(player.getStringUUID()).setCaught_count(caughtCount);
+                    config.updatePlayerData(config.getPlayerData().get(player.getStringUUID()));
+
                     if (!config.getPlayerData().get(player.getStringUUID()).claimableRewards().isEmpty()) {
                         player.sendMessage(MiniMessage.miniMessage().deserialize("<dark_gray>[<blue>DexRewards<dark_gray>] <gray>You have rewards to claim!"));
                     }
@@ -117,15 +220,10 @@ public class DexRewards implements ModInitializer {
                 config.updatePlayerData(config.getPlayerData().get(serverPlayNetworkHandler.getPlayer().getStringUUID()));
             });
 
-            CobblemonEvents.POKEMON_GAINED.subscribe(Priority.NORMAL, event -> {
-                ServerPlayer player = server.getPlayerList().getPlayer(event.getPlayerId());
-                int caughtCount = 0;
+            CobblemonEvents.POKEDEX_DATA_CHANGED_POST.subscribe(Priority.NORMAL, event -> {
+                ServerPlayer player = server.getPlayerList().getPlayer(event.getPlayerUUID());
                 if (player != null) {
-                    for (ResourceLocation record : Cobblemon.playerDataManager.getPokedexData(player).getSpeciesRecords().keySet()) {
-                        if (Cobblemon.playerDataManager.getPokedexData(player).getSpeciesRecords().get(record).getKnowledge().equals(PokedexEntryProgress.CAUGHT)) {
-                            caughtCount++;
-                        }
-                    }
+                    int caughtCount = getCaught(player);
 
                     for (RewardGroup group : config.getRewards()) {
                         double required_percent = group.required_caught_percent();
@@ -147,6 +245,28 @@ public class DexRewards implements ModInitializer {
                 return Unit.INSTANCE;
             });
         });
+    }
+
+    private int getCaught(ServerPlayer player) {
+        int caughtCount = 0;
+        for (SpeciesDexRecord record : Cobblemon.playerDataManager.getPokedexData(player).getSpeciesRecords().values()) {
+            if (record.getKnowledge().equals(PokedexEntryProgress.CAUGHT)) {
+                caughtCount++;
+            }
+        }
+
+        return caughtCount;
+    }
+
+    private int getEncountered(ServerPlayer player) {
+        int seenCount = 0;
+        for (SpeciesDexRecord record : Cobblemon.playerDataManager.getPokedexData(player).getSpeciesRecords().values()) {
+            if (record.getKnowledge().equals(PokedexEntryProgress.ENCOUNTERED)) {
+                seenCount++;
+            }
+        }
+
+        return seenCount;
     }
 
     public int openRewardsMenu(CommandContext<CommandSourceStack> ctx) {
