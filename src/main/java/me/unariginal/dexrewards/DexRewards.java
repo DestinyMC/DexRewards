@@ -48,7 +48,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class DexRewards implements ModInitializer {
     private static final String MOD_ID = "dexrewards";

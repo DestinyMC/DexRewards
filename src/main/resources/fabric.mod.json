@@ -24,7 +24,7 @@
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
     "minecraft": "${minecraft_version}",
-    "cobblemon": "1.6.0+1.21.1",
-    "gooeylibs": "3.1.0"
+    "cobblemon": "1.6.1+1.21.1",
+    "gooeylibs": ">=3.1.0"
   }
 }
