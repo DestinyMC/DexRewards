@@ -2,24 +2,232 @@
   "reward_groups": {
     "Trainer": {
       "icon": "cobblemon:poke_ball",
-      "required_caught_percent": 10.0,
+      "required_caught_percent": 5.0,
       "rewards": {
-        "example_command": {
-          "type": "command",
-          "commands": [
-            "lp user %player% parent settrack pokedexranks trainer",
-            "say This is a test command!"
-          ]
-        },
-        "example_item": {
-          "type": "item",
-          "item": "minecraft:diamond",
-          "count": 10
-        },
-        "example_other_item": {
+        "item_group": {
           "type": "item",
           "item": "cobblemon:poke_ball",
           "count": 16
+        }
+      }
+    },
+    "Rookie": {
+      "icon": "cobblemon:fast_ball",
+      "required_caught_percent": 10.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:great_ball",
+          "count": 16
+        }
+      }
+    },
+    "Beginner": {
+      "icon": "cobblemon:great_ball",
+      "required_caught_percent": 15.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:thunder_stone",
+          "count": 2
+        }
+      }
+    },
+    "Novice": {
+      "icon": "cobblemon:level_ball",
+      "required_caught_percent": 20.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:exp_candy_s",
+          "count": 48
+        }
+      }
+    },
+    "Ranger": {
+      "icon": "cobblemon:ultra_ball",
+      "required_caught_percent": 25.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:ultra_ball",
+          "count": 32
+        }
+      }
+    },
+    "Collector": {
+      "icon": "cobblemon:lure_ball",
+      "required_caught_percent": 30.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:fire_stone",
+          "count": 2
+        }
+      }
+    },
+    "Apprentice": {
+      "icon": "cobblemon:safari_ball",
+      "required_caught_percent": 35.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:exp_candy_m",
+          "count": 48
+        }
+      }
+    },
+    "Expert": {
+      "icon": "cobblemon:heavy_ball",
+      "required_caught_percent": 40.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:nest_ball",
+          "count": 32
+        }
+      }
+    },
+    "Veteran": {
+      "icon": "cobblemon:love_ball",
+      "required_caught_percent": 45.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:lure_ball",
+          "count": 32
+        }
+      }
+    },
+    "Sage": {
+      "icon": "cobblemon:moon_ball",
+      "required_caught_percent": 50.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:quick_ball",
+          "count": 16
+        }
+      }
+    },
+    "Professor": {
+      "icon": "cobblemon:repeat_ball",
+      "required_caught_percent": 55.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:rare_candy",
+          "count": 16
+        }
+      }
+    },
+    "Commander": {
+      "icon": "cobblemon:timer_ball",
+      "required_caught_percent": 60.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:rare_candy",
+          "count": 32
+        }
+      }
+    },
+    "Elite": {
+      "icon": "cobblemon:luxury_ball",
+      "required_caught_percent": 65.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:luxury_ball",
+          "count": 16
+        }
+      }
+    },
+    "Executive": {
+      "icon": "cobblemon:premier_ball",
+      "required_caught_percent": 70.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:cherish_ball",
+          "count": 1
+        }
+      }
+    },
+    "Master": {
+      "icon": "cobblemon:dusk_ball",
+      "required_caught_percent": 75.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:exp_candy_l",
+          "count": 16
+        }
+      }
+    },
+    "Baron": {
+      "icon": "cobblemon:quick_ball",
+      "required_caught_percent": 80.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:beast_ball",
+          "count": 1
+        }
+      }
+    },
+    "Duke": {
+      "icon": "cobblemon:beast_ball",
+      "required_caught_percent": 85.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:master_ball",
+          "count": 1
+        }
+      }
+    },
+    "Champion": {
+      "icon": "cobblemon:master_ball",
+      "required_caught_percent": 90.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:ancient_origin_ball",
+          "count": 1
+        }
+      }
+    },
+    "World Champion": {
+      "icon": "cobblemon:cherish_ball",
+      "required_caught_percent": 95.0,
+      "rewards": {
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:exp_candy_xl",
+          "count": 16
+        }
+      }
+    },
+    "Arceus": {
+      "icon": "minecraft:nether_star",
+      "required_caught_percent": 100.0,
+      "rewards": {
+        "command_group": {
+          "type": "command",
+          "commands": [
+            "tellraw @a [\"\",{\"text\":\"[\",\"color\":\"dark_gray\"},{\"text\":\"DexRewards\",\"color\":\"blue\"},{\"text\":\"]\",\"color\":\"dark_gray\"},{\"text\":\" %player% has completed their pokedex!\",\"color\":\"gold\"}]"
+          ]
+        },
+        "item_group": {
+          "type": "item",
+          "item": "cobblemon:master_ball",
+          "count": 6
+        },
+        "item_group_2": {
+          "type": "item",
+          "item": "cobblemon:exp_candy_xl",
+          "count": 32
         }
       }
     }
