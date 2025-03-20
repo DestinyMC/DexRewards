@@ -43,7 +43,7 @@ import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.component.ResolvableProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import net.minecraft.nbt.NbtCompound;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -273,7 +273,10 @@ public class DexRewards implements ModInitializer {
             ServerPlayer player = ctx.getSource().getPlayer();
             if (player != null) {
                 try {
-                    ItemStack bgItem = new ItemStack(Items.GRAY_STAINED_GLASS_PANE, 1);
+                    ItemStack bgItem = new ItemStack(Items.PAPER, 1);
+                    NbtCompound tag = bgItem.getOrCreateNbt();
+                    tag.putInt("CustomModelData", 80009);
+                    bgItem.setNbt(tag);
                     bgItem.applyComponents(DataComponentMap.builder().set(DataComponents.ITEM_NAME, Component.empty()).build());
 
                     GooeyButton background = GooeyButton.builder()
